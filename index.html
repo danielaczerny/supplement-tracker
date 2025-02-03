@@ -93,10 +93,10 @@
         let ironActive = false;
 
         try {
-            const savedDay = sessionStorage.getItem('currentDay');
-            const savedCleanseStarted = sessionStorage.getItem('cleanseStarted');
-            const savedWeek = sessionStorage.getItem('currentWeek');
-            const savedIronActive = sessionStorage.getItem('ironActive');
+            const savedDay = localStorage.getItem('currentDay');
+            const savedCleanseStarted = localStorage.getItem('cleanseStarted');
+            const savedWeek = localStorage.getItem('currentWeek');
+            const savedIronActive = localStorage.getItem('ironActive');
 
             if (savedDay) currentDay = parseInt(savedDay);
             if (savedCleanseStarted) {
@@ -179,7 +179,7 @@
             ironActive = !ironActive;
             updateIronStatus();
             try {
-                sessionStorage.setItem('ironActive', ironActive);
+                localStorage.setItem('ironActive', ironActive);
             } catch (error) {
                 console.log('Could not save iron state');
             }
@@ -189,7 +189,7 @@
             currentDay = currentDay === 3 ? 1 : currentDay + 1;
             renderEFAS();
             try {
-                sessionStorage.setItem('currentDay', currentDay);
+                localStorage.setItem('currentDay', currentDay);
             } catch (error) {
                 console.log('Could not save state');
             }
@@ -203,8 +203,8 @@
             document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8`;
             renderGICleanse();
             try {
-                sessionStorage.setItem('cleanseStarted', true);
-                sessionStorage.setItem('currentWeek', currentWeek);
+                localStorage.setItem('cleanseStarted', true);
+                localStorage.setItem('currentWeek', currentWeek);
             } catch (error) {
                 console.log('Could not save state');
             }
@@ -223,8 +223,8 @@
             }
             renderGICleanse();
             try {
-                sessionStorage.setItem('cleanseStarted', cleanseStarted);
-                sessionStorage.setItem('currentWeek', currentWeek);
+                localStorage.setItem('cleanseStarted', cleanseStarted);
+                localStorage.setItem('currentWeek', currentWeek);
             } catch (error) {
                 console.log('Could not save state');
             }
