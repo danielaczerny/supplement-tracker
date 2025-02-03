@@ -12,7 +12,6 @@
         <div class="bg-white rounded-lg shadow mb-6 p-4">
             <h2 class="text-xl font-bold mb-4">Daily Supplements</h2>
             <div class="space-y-3" id="dailySupplements">
-                <!-- Daily items will be inserted here -->
             </div>
         </div>
 
@@ -27,7 +26,28 @@
             </div>
             <p id="weekCounter" class="mb-4 font-semibold">Not Started</p>
             <div id="giCleanse" class="space-y-3">
-                <!-- GI Cleanse items will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Iron Supplementation -->
+        <div class="bg-white rounded-lg shadow mb-6 p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Iron Supplementation</h2>
+                <div>
+                    <button id="toggleIron" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">Start Iron</button>
+                </div>
+            </div>
+            <div id="ironSupp" class="space-y-3">
+                <div class="p-3 rounded-lg border border-purple-300 bg-purple-50 hidden">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold">Iron - OptiFerrin C</h3>
+                            <p class="text-sm text-gray-600">2 capsules daily</p>
+                            <p class="text-xs text-gray-500">Take during menstrual flow</p>
+                        </div>
+                        <div class="text-sm text-gray-600">With food</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -38,7 +58,6 @@
                 <button id="nextDay" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Next Day</button>
             </div>
             <div id="efasRotation" class="space-y-3">
-                <!-- EFAS items will be inserted here -->
             </div>
         </div>
     </div>
@@ -48,7 +67,8 @@
             { name: "MY Complex MK", timing: "With breakfast", dose: "2 capsules" },
             { name: "Liposomal Nicotinamide Riboside", timing: "AM with food", dose: "1 capsule" },
             { name: "Glycine Powder", timing: "Any time (nice before bed)", dose: "½ teaspoon in warm water" },
-            { name: "Liposomal glutathione", timing: "Every morning", dose: "1 capsule daily x 4 months, then 2x per week" }
+            { name: "Liposomal glutathione", timing: "Every morning", dose: "1 capsule daily x 4 months, then 2x per week" },
+            { name: "Similase Sensitive Stomach", timing: "With each meal", dose: "1 capsule" }
         ];
 
         const giCleanseSupps = [
@@ -58,8 +78,7 @@
         ];
 
         const postCleanseSupps = [
-            { name: "Therbiotic complete Probiotic", timing: "Daily with food", dose: "1 capsule", note: "Start after 8-week cleanse" },
-            { name: "Similase Sensitive Stomach", timing: "With each meal", dose: "1 capsule" }
+            { name: "Therbiotic complete Probiotic", timing: "Daily with food", dose: "1 capsule", note: "Start after 8-week cleanse" }
         ];
 
         const efasSupps = [
@@ -71,6 +90,27 @@
         let currentDay = 1;
         let currentWeek = 0;
         let cleanseStarted = false;
+        let ironActive = false;
+
+        try {
+            const savedDay = sessionStorage.getItem('currentDay');
+            const savedCleanseStarted = sessionStorage.getItem('cleanseStarted');
+            const savedWeek = sessionStorage.getItem('currentWeek');
+            const savedIronActive = sessionStorage.getItem('ironActive');
+
+            if (savedDay) currentDay = parseInt(savedDay);
+            if (savedCleanseStarted) {
+                cleanseStarted = savedCleanseStarted === 'true';
+            }
+            if (savedWeek) {
+                currentWeek = parseInt(savedWeek);
+            }
+            if (savedIronActive) {
+                ironActive = savedIronActive === 'true';
+            }
+        } catch (error) {
+            console.log('No saved state available');
+        }
 
         function renderDailySupps() {
             const container = document.getElementById('dailySupplements');
@@ -119,10 +159,40 @@
             `).join('');
         }
 
+        function updateIronStatus() {
+            const ironSupp = document.querySelector('#ironSupp div');
+            const toggleBtn = document.getElementById('toggleIron');
+            if (ironActive) {
+                ironSupp.classList.remove('hidden');
+                toggleBtn.textContent = 'Stop Iron';
+                toggleBtn.classList.remove('bg-purple-500', 'hover:bg-purple-600');
+                toggleBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+            } else {
+                ironSupp.classList.add('hidden');
+                toggleBtn.textContent = 'Start Iron';
+                toggleBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                toggleBtn.classList.add('bg-purple-500', 'hover:bg-purple-600');
+            }
+        }
+
+        document.getElementById('toggleIron').addEventListener('click', () => {
+            ironActive = !ironActive;
+            updateIronStatus();
+            try {
+                sessionStorage.setItem('ironActive', ironActive);
+            } catch (error) {
+                console.log('Could not save iron state');
+            }
+        });
+
         document.getElementById('nextDay').addEventListener('click', () => {
             currentDay = currentDay === 3 ? 1 : currentDay + 1;
             renderEFAS();
-            localStorage.setItem('currentDay', currentDay);
+            try {
+                sessionStorage.setItem('currentDay', currentDay);
+            } catch (error) {
+                console.log('Could not save state');
+            }
         });
 
         document.getElementById('startCleanse').addEventListener('click', () => {
@@ -132,8 +202,12 @@
             document.getElementById('nextWeek').classList.remove('hidden');
             document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8`;
             renderGICleanse();
-            localStorage.setItem('cleanseStarted', true);
-            localStorage.setItem('currentWeek', currentWeek);
+            try {
+                sessionStorage.setItem('cleanseStarted', true);
+                sessionStorage.setItem('currentWeek', currentWeek);
+            } catch (error) {
+                console.log('Could not save state');
+            }
         });
 
         document.getElementById('nextWeek').addEventListener('click', () => {
@@ -148,33 +222,24 @@
                 document.getElementById('weekCounter').textContent = 'Cleanse Complete';
             }
             renderGICleanse();
-            localStorage.setItem('cleanseStarted', cleanseStarted);
-            localStorage.setItem('currentWeek', currentWeek);
+            try {
+                sessionStorage.setItem('cleanseStarted', cleanseStarted);
+                sessionStorage.setItem('currentWeek', currentWeek);
+            } catch (error) {
+                console.log('Could not save state');
+            }
         });
 
-        // Load saved state
-        window.addEventListener('load', () => {
-            const savedDay = localStorage.getItem('currentDay');
-            const savedCleanseStarted = localStorage.getItem('cleanseStarted');
-            const savedWeek = localStorage.getItem('currentWeek');
-
-            if (savedDay) currentDay = parseInt(savedDay);
-            if (savedCleanseStarted) {
-                cleanseStarted = savedCleanseStarted === 'true';
-                if (cleanseStarted) {
-                    document.getElementById('startCleanse').classList.add('hidden');
-                    document.getElementById('nextWeek').classList.remove('hidden');
-                }
-            }
-            if (savedWeek) {
-                currentWeek = parseInt(savedWeek);
-                document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8`;
-            }
-
-            renderDailySupps();
-            renderGICleanse();
-            renderEFAS();
-        });
+        // Initial render
+        if (cleanseStarted) {
+            document.getElementById('startCleanse').classList.add('hidden');
+            document.getElementById('nextWeek').classList.remove('hidden');
+            document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8`;
+        }
+        renderDailySupps();
+        renderGICleanse();
+        renderEFAS();
+        updateIronStatus();
     </script>
 </body>
 </html>
