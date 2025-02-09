@@ -92,12 +92,14 @@
         let currentWeek = 0;
         let cleanseStarted = false;
         let ironActive = false;
+        let startDate = null;
 
         try {
             const savedDay = localStorage.getItem('currentDay');
             const savedCleanseStarted = localStorage.getItem('cleanseStarted');
             const savedWeek = localStorage.getItem('currentWeek');
             const savedIronActive = localStorage.getItem('ironActive');
+            const savedStartDate = localStorage.getItem('startDate');
 
             if (savedDay) currentDay = parseInt(savedDay);
             if (savedCleanseStarted) {
@@ -109,8 +111,17 @@
             if (savedIronActive) {
                 ironActive = savedIronActive === 'true';
             }
+            if (savedStartDate) {
+                startDate = new Date(savedStartDate);
+            }
         } catch (error) {
             console.log('No saved state available');
+        }
+
+        function getNextDate(date) {
+            const nextDate = new Date(date);
+            nextDate.setDate(nextDate.getDate() + 7);
+            return nextDate.toLocaleDateString();
         }
 
         function renderDailySupps() {
@@ -199,13 +210,15 @@
         document.getElementById('startCleanse').addEventListener('click', () => {
             cleanseStarted = true;
             currentWeek = 1;
+            startDate = new Date('2024-01-20'); // Setting Jan 20 as start date
             document.getElementById('startCleanse').classList.add('hidden');
             document.getElementById('nextWeek').classList.remove('hidden');
-            document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8 (Next: ${new Date(new Date().setDate(new Date().getDate() + 7)).toLocaleDateString()})`;
+            document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8 (Next: ${getNextDate(startDate)})`;
             renderGICleanse();
             try {
                 localStorage.setItem('cleanseStarted', true);
                 localStorage.setItem('currentWeek', currentWeek);
+                localStorage.setItem('startDate', startDate.toISOString());
             } catch (error) {
                 console.log('Could not save state');
             }
@@ -214,13 +227,13 @@
         document.getElementById('nextWeek').addEventListener('click', () => {
             if (currentWeek < 8) {
                 currentWeek++;
-                const nextDate = new Date();
-                nextDate.setDate(nextDate.getDate() + 7);
-                const dateString = nextDate.toLocaleDateString();
-                document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8 (Next: ${dateString})`;
+                startDate = new Date(startDate);
+                startDate.setDate(startDate.getDate() + 7);
+                document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8 (Next: ${getNextDate(startDate)})`;
             } else {
                 cleanseStarted = false;
                 currentWeek = 0;
+                startDate = null;
                 document.getElementById('startCleanse').classList.remove('hidden');
                 document.getElementById('nextWeek').classList.add('hidden');
                 document.getElementById('weekCounter').textContent = 'Cleanse Complete';
@@ -229,16 +242,21 @@
             try {
                 localStorage.setItem('cleanseStarted', cleanseStarted);
                 localStorage.setItem('currentWeek', currentWeek);
+                if (startDate) {
+                    localStorage.setItem('startDate', startDate.toISOString());
+                } else {
+                    localStorage.removeItem('startDate');
+                }
             } catch (error) {
                 console.log('Could not save state');
             }
         });
 
         // Initial render
-        if (cleanseStarted) {
+        if (cleanseStarted && startDate) {
             document.getElementById('startCleanse').classList.add('hidden');
             document.getElementById('nextWeek').classList.remove('hidden');
-            document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8`;
+            document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8 (Next: ${getNextDate(startDate)})`;
         }
         renderDailySupps();
         renderGICleanse();
