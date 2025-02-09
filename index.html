@@ -201,7 +201,7 @@
             currentWeek = 1;
             document.getElementById('startCleanse').classList.add('hidden');
             document.getElementById('nextWeek').classList.remove('hidden');
-            document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8`;
+            document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8 (Next: ${new Date(new Date().setDate(new Date().getDate() + 7)).toLocaleDateString()})`;
             renderGICleanse();
             try {
                 localStorage.setItem('cleanseStarted', true);
@@ -214,7 +214,10 @@
         document.getElementById('nextWeek').addEventListener('click', () => {
             if (currentWeek < 8) {
                 currentWeek++;
-                document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8`;
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + 7);
+                const dateString = nextDate.toLocaleDateString();
+                document.getElementById('weekCounter').textContent = `Week ${currentWeek} of 8 (Next: ${dateString})`;
             } else {
                 cleanseStarted = false;
                 currentWeek = 0;
